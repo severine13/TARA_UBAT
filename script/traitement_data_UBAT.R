@@ -2,18 +2,25 @@
 # 2017 - 2018
 # read and plot all data from UBAT for Tara Expeditions
 
+# packages
 library(ggplot2)
+Tarastation = "NZ-NC"
 
 pdf("TaraBiolum.pdf",width=20,height=10,bg="white")
 
-# read all datasets
-TaraDir = "F:/Oceano/sev-projet-autres/TARA_UBAT/UBAT_tara_pacific/Taiwan-NZ"
-setwd(TaraDir)
+# read all datasets in the repository
+TaraDir = "F:/Oceano/sev-projet-autres/TARA_UBAT/UBAT_tara_pacific/"
+setwd(paste(TaraDir,Tarastation,sep=""))
+
+# list all files in the repo
 files <- list.files(pattern = "\\.log$")
 
+# plot all data in one file
 for (i in 1:length(files)){
+inFile = read.table(files[i],sep=",",skip=1,fill=T)
+# remove non-entire lines
+inFile = inFile [ complete.cases(inFile), ]
 
-inFile = read.table(files[i],sep=",",skip=1)
 #inFile=inFile[-(which(ncol(inFile)!=70)),]
 names(inFile)=c("UBAT","record_nb","cal","average_bl","pump","volt","flow","HV","res1","res2","60HzdigitAD")
 
@@ -59,18 +66,18 @@ mat_vec$calib60 = mat_vec$Biolum*mat_vec$cal
 
 # plot data
 tt=ggplot(mat_vec,aes(y=calib60,x=(timeS-timeS[1])/3600))+geom_line()+ggtitle(files[i])+ylab("Bioluminescence (ph.s)")+
-  xlab("Time (h)")
+  xlab("Time (min)")
 
 print(tt)
 
 # plot data average biolum 1Hz - notify if flowrate =0
 if (max(mat_vec$flow==0,na.rm=T)){
 tt2=ggplot(mat_vec,aes(y=average_bl,x=(record_nb-record_nb[1])/60))+geom_line()+ggtitle(paste(files[i],"/ flow rate=0, average biolum ploted"))+ylab("Bioluminescence (ph.L)")+
-    xlab("Time (h)")
+    xlab("Time (min)")
 print(tt2)
 } else {
 tt2=ggplot(mat_vec,aes(y=calib1,x=(record_nb-record_nb[1])/60))+geom_line()+ggtitle(files[i])+ylab("Bioluminescence (ph.L)")+
-  xlab("Time (h)")
+  xlab("Time (min)")
 print(tt2)
 }
 
